@@ -134,9 +134,35 @@
 
   // ------------------------------------------------------ comunicacao ----
 
+  /*
+   * Quando a extensao e recarregada em chrome://extensions, os content scripts
+   * ja injetados ficam orfaos: o chrome.runtime deles morre e sendMessage passa
+   * a lancar "Extension context invalidated" de forma SINCRONA - nao via
+   * chrome.runtime.lastError. Sem este try/catch a excecao escapa do handler de
+   * clique, o botao fica travado em disabled e o painel nao diz nada, que e
+   * exatamente o cenario de "clico e nao acontece nada".
+   */
+  function mandar(mensagem, aoResponder) {
+    try {
+      chrome.runtime.sendMessage(mensagem, function (resposta) {
+        if (chrome.runtime.lastError || !resposta) {
+          aoResponder(null);
+          return;
+        }
+        aoResponder(resposta);
+      });
+      return true;
+    } catch (erro) {
+      alerta = 'Extensao recarregada. Atualize esta pagina (F5) para voltar a funcionar.';
+      render();
+      aoResponder(null);
+      return false;
+    }
+  }
+
   function enviar(registros) {
-    chrome.runtime.sendMessage({ tipo: 'ADICIONAR', registros: registros }, function (resposta) {
-      if (chrome.runtime.lastError || !resposta) {
+    mandar({ tipo: 'ADICIONAR', registros: registros }, function (resposta) {
+      if (!resposta) {
         // O service worker pode ter hibernado no meio do envio. Liberamos os
         // ids para que a proxima varredura tente de novo.
         for (const registro of registros) jaEnviados.delete(registro.id);
@@ -148,16 +174,16 @@
   }
 
   function pedirEstado() {
-    chrome.runtime.sendMessage({ tipo: 'ESTADO' }, function (resposta) {
-      if (chrome.runtime.lastError || !resposta) return;
+    mandar({ tipo: 'ESTADO' }, function (resposta) {
+      if (!resposta) return;
       estado = resposta;
       render();
     });
   }
 
   function exportar(botao) {
-    chrome.runtime.sendMessage({ tipo: 'TUDO' }, function (resposta) {
-      if (chrome.runtime.lastError || !resposta || !resposta.registros.length) {
+    mandar({ tipo: 'TUDO' }, function (resposta) {
+      if (!resposta || !resposta.registros.length) {
         botao.textContent = 'Nada para exportar';
         setTimeout(function () {
           botao.textContent = 'Exportar Excel';
@@ -186,9 +212,11 @@
   function alternarCaptura() {
     const ligar = !estado.capturando;
     btnCaptura.disabled = true;
-    chrome.runtime.sendMessage({ tipo: 'CAPTURA', ligado: ligar }, function (resposta) {
+    mandar({ tipo: 'CAPTURA', ligado: ligar }, function (resposta) {
+      // Reabilitar aqui, e nao so no caminho feliz, para o botao nunca ficar
+      // travado por uma falha de comunicacao.
       btnCaptura.disabled = false;
-      if (chrome.runtime.lastError || !resposta) return;
+      if (!resposta) return;
       estado = resposta;
       // Ao religar, esquecemos o que ja foi enviado nesta aba, para que os
       // cards que estao na tela agora sejam lidos na hora em vez de so na
@@ -247,8 +275,8 @@
         }, 4000);
         return;
       }
-      chrome.runtime.sendMessage({ tipo: 'LIMPAR' }, function (resposta) {
-        if (chrome.runtime.lastError) return;
+      mandar({ tipo: 'LIMPAR' }, function (resposta) {
+        if (!resposta) return;
         jaEnviados.clear();
         estado = resposta || { total: 0, comTelefone: 0, capturando: estado.capturando };
         confirmando = false;
