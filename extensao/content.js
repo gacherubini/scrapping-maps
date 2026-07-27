@@ -45,7 +45,7 @@
 
   function extrair(card, link, busca) {
     const href = link.href || '';
-    const daUrl = MapsParse.parseLugarUrl(href);
+    const idDaUrl = MapsParse.parseLugarId(href);
     const nome = (link.getAttribute('aria-label') || '').trim();
 
     const texto = card.innerText || '';
@@ -63,7 +63,7 @@
 
     // Sem id estavel na URL, caimos em nome+endereco. Pior que o ftid, mas
     // ainda evita duplicar o mesmo card relido durante o scroll.
-    const id = daUrl.id || 'txt:' + nome + '|' + local.endereco;
+    const id = idDaUrl || 'txt:' + nome + '|' + local.endereco;
 
     return {
       id: id,
@@ -73,8 +73,6 @@
       categoria: local.categoria,
       nota: nota.nota,
       avaliacoes: nota.avaliacoes,
-      latitude: daUrl.latitude,
-      longitude: daUrl.longitude,
       patrocinado: MapsParse.parsePatrocinado(linhas) ? 'sim' : '',
       link_maps: href.split('?')[0],
       busca: busca,

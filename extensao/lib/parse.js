@@ -101,32 +101,22 @@
   }
 
   /*
-   * A URL do lugar carrega tudo que precisamos de identidade e coordenada:
+   * A URL do lugar carrega a identidade dele:
    *   /maps/place/Nome/data=!4m7!3m6!1s0x9519...:0xabc...!8m2!3d-29.9!4d-51.1
-   * O par hex (o "ftid") e a chave de deduplicacao mais estavel disponivel.
+   * O par hex (o "ftid") e a chave de deduplicacao mais estavel disponivel sem
+   * usar a API paga.
    */
-  function parseLugarUrl(href) {
-    const resultado = { id: '', latitude: '', longitude: '' };
-    if (!href) return resultado;
-
-    const coords = href.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
-    if (coords) {
-      resultado.latitude = Number(coords[1]);
-      resultado.longitude = Number(coords[2]);
-    }
+  function parseLugarId(href) {
+    if (!href) return '';
 
     const ftid = href.match(/(0x[0-9a-f]+:0x[0-9a-f]+)/i);
-    if (ftid) {
-      resultado.id = ftid[1].toLowerCase();
-      return resultado;
-    }
+    if (ftid) return ftid[1].toLowerCase();
 
     // Alguns resultados so trazem o place id no formato /g/11xxxx.
     const placeId = href.match(/!1?6s(%2F|\/)g(%2F|\/)([0-9a-z_]+)/i);
-    if (placeId) {
-      resultado.id = 'g/' + placeId[3].toLowerCase();
-    }
-    return resultado;
+    if (placeId) return 'g/' + placeId[3].toLowerCase();
+
+    return '';
   }
 
   /*
@@ -152,7 +142,7 @@
     parseCategoriaEndereco: parseCategoriaEndereco,
     parsePatrocinado: parsePatrocinado,
     parseAvaliacao: parseAvaliacao,
-    parseLugarUrl: parseLugarUrl,
+    parseLugarId: parseLugarId,
     parseBusca: parseBusca,
   };
 

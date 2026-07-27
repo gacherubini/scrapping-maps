@@ -37,7 +37,6 @@ para todas as abas, então recarregar o Maps não desliga a captura.
 | Endereco | logradouro como o Maps exibe no card |
 | Categoria | "Pet Shop", "Veterinário", ... |
 | Nota / Avaliacoes | número, dá pra ordenar e filtrar |
-| Latitude / Longitude | extraídas da URL do lugar |
 | Anuncio | `sim` quando o resultado é patrocinado |
 | Link Maps | link direto do lugar |
 | Busca | o termo que gerou aquele resultado |

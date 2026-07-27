@@ -12,8 +12,6 @@
     { key: 'categoria', label: 'Categoria', width: 22, type: 'text' },
     { key: 'nota', label: 'Nota', width: 8, type: 'number' },
     { key: 'avaliacoes', label: 'Avaliacoes', width: 12, type: 'number' },
-    { key: 'latitude', label: 'Latitude', width: 14, type: 'number' },
-    { key: 'longitude', label: 'Longitude', width: 14, type: 'number' },
     { key: 'patrocinado', label: 'Anuncio', width: 10, type: 'text' },
     { key: 'link_maps', label: 'Link Maps', width: 45, type: 'text' },
     { key: 'busca', label: 'Busca', width: 24, type: 'text' },

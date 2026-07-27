@@ -199,23 +199,30 @@ test('avaliacao: lugar sem nota devolve vazio', () => {
   assert.deepEqual(parse.parseAvaliacao(null), { nota: '', avaliacoes: '' });
 });
 
-test('url: extrai ftid como id e as coordenadas', () => {
+test('url: extrai o ftid como id', () => {
   const href =
     'https://www.google.com/maps/place/Bicho+Mania/data=!4m7!3m6!1s0x951977a1b2c3d4e5:0x1a2b3c4d5e6f7a8b!8m2!3d-29.9123456!4d-51.1876543!16s%2Fg%2F11abc123';
-  assert.deepEqual(parse.parseLugarUrl(href), {
-    id: '0x951977a1b2c3d4e5:0x1a2b3c4d5e6f7a8b',
-    latitude: -29.9123456,
-    longitude: -51.1876543,
-  });
+  assert.equal(parse.parseLugarId(href), '0x951977a1b2c3d4e5:0x1a2b3c4d5e6f7a8b');
 });
 
 test('url: sem ftid cai no place id /g/', () => {
   const href = 'https://www.google.com/maps/place/Loja/data=!4m2!3m1!16s%2Fg%2F11xyz789';
-  assert.equal(parse.parseLugarUrl(href).id, 'g/11xyz789');
+  assert.equal(parse.parseLugarId(href), 'g/11xyz789');
 });
 
 test('url: href inutil nao quebra', () => {
-  assert.deepEqual(parse.parseLugarUrl(''), { id: '', latitude: '', longitude: '' });
+  assert.equal(parse.parseLugarId(''), '');
+  assert.equal(parse.parseLugarId(null), '');
+});
+
+test('url: o mesmo lugar em duas buscas gera o mesmo id', () => {
+  // A dedup depende disso: o Maps varia o resto da URL entre as buscas, mas o
+  // ftid e estavel.
+  const a =
+    'https://www.google.com/maps/place/Petz+Canoas/data=!4m7!3m6!1s0x951971e40c905c69:0x1017f35fb56b3846!8m2!3d-29.9!4d-51.1';
+  const b =
+    'https://www.google.com/maps/place/Petz/data=!3m1!4b1!4m6!3m5!1s0x951971E40C905C69:0x1017F35FB56B3846!8m2!3d-29.91!4d-51.18';
+  assert.equal(parse.parseLugarId(a), parse.parseLugarId(b));
 });
 
 test('busca: le a query da URL e prefere ela ao input', () => {
@@ -312,12 +319,8 @@ test('real: aria-label diz "comentarios", nao "avaliacoes"', () => {
   });
 });
 
-test('real: href de anuncio sem place id ainda rende ftid e coordenadas', () => {
+test('real: href de anuncio sem place id ainda rende ftid', () => {
   const href =
     'https://www.google.com/maps/place/CESAL/data=!4m7!3m6!1s0x9519770e4dc5cb75:0xabfb23d1340ec581!8m2!3d-29.998465!4d-51.15';
-  assert.deepEqual(parse.parseLugarUrl(href), {
-    id: '0x9519770e4dc5cb75:0xabfb23d1340ec581',
-    latitude: -29.998465,
-    longitude: -51.15,
-  });
+  assert.equal(parse.parseLugarId(href), '0x9519770e4dc5cb75:0xabfb23d1340ec581');
 });
