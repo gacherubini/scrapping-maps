@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Maps Coletor",
+  "version": "1.0.0",
+  "description": "Coleta nome, telefone e endereco das lojas do Google Maps enquanto voce rola a lista, e exporta para Excel.",
+  "permissions": ["storage", "unlimitedStorage"],
+  "host_permissions": [
+    "https://www.google.com/maps/*",
+    "https://www.google.com.br/maps/*",
+    "https://maps.google.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.google.com/maps/*",
+        "https://www.google.com.br/maps/*",
+        "https://maps.google.com/*"
+      ],
+      "js": ["lib/xlsx.mini.js", "lib/schema.js", "lib/parse.js", "content.js"],
+      "css": ["overlay.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Maps Coletor"
+  }
+}

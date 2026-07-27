@@ -1,0 +1,7 @@
+# planilhas geradas pelos testes e pelo uso
+tmp/
+*.xlsx
+
+node_modules/
+.DS_Store
+Thumbs.db

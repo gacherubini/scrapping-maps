@@ -1,0 +1,10 @@
+{
+  "name": "maps-coletor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Extensao do Chrome que coleta lojas do Google Maps enquanto voce rola a lista e exporta para Excel.",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}

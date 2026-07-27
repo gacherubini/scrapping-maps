@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Maps Coletor</title>
+    <style>
+      body {
+        width: 280px;
+        margin: 0;
+        padding: 14px;
+        background: #1f2933;
+        color: #fff;
+        font-family: Roboto, Arial, sans-serif;
+        font-size: 13px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      #total {
+        font-size: 26px;
+        font-weight: 600;
+        line-height: 1;
+      }
+      #detalhe {
+        margin-top: 4px;
+        color: #9fb3c8;
+        font-size: 12px;
+      }
+      #buscas {
+        max-height: 150px;
+        margin: 12px 0 0;
+        padding: 0;
+        overflow-y: auto;
+        list-style: none;
+      }
+      #buscas li {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 4px 0;
+        border-top: 1px solid #323f4b;
+        font-size: 12px;
+      }
+      #buscas li span:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #buscas li span:last-child {
+        color: #9fb3c8;
+        white-space: nowrap;
+      }
+      #botoes {
+        display: flex;
+        gap: 6px;
+        margin-top: 14px;
+      }
+      button {
+        flex: 1;
+        padding: 8px 10px;
+        border: 0;
+        border-radius: 7px;
+        background: #3e4c59;
+        color: #fff;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #52606d;
+      }
+      #exportar {
+        flex: 2;
+        background: #1a7f37;
+      }
+      #exportar:hover {
+        background: #22a04a;
+      }
+      #limpar.perigo {
+        background: #b91c1c;
+      }
+      #dica {
+        margin-top: 12px;
+        color: #7b8794;
+        font-size: 11px;
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Maps Coletor</h1>
+    <div id="total">—</div>
+    <div id="detalhe"></div>
+    <ul id="buscas"></ul>
+    <div id="botoes">
+      <button id="exportar">Exportar Excel</button>
+      <button id="limpar">Limpar</button>
+    </div>
+    <p id="dica">
+      Abra o Google Maps, pesquise e role a lista. As lojas entram sozinhas,
+      sem duplicar, mesmo trocando de busca ou fechando o Chrome.
+    </p>
+    <script src="lib/xlsx.mini.js"></script>
+    <script src="lib/schema.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
