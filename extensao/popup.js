@@ -6,12 +6,14 @@
   'use strict';
 
   const elTotal = document.getElementById('total');
-  const elDetalhe = document.getElementById('detalhe');
+  const elSituacao = document.getElementById('situacao');
   const elBuscas = document.getElementById('buscas');
+  const btnCaptura = document.getElementById('captura');
   const btnExportar = document.getElementById('exportar');
   const btnLimpar = document.getElementById('limpar');
 
   let registros = [];
+  let capturando = false;
 
   function perguntar(mensagem) {
     return new Promise(function (resolver) {
@@ -38,10 +40,15 @@
     }).length;
 
     elTotal.textContent = registros.length;
-    elDetalhe.textContent =
+
+    const acumulado =
       registros.length === 0
-        ? 'nenhuma loja coletada ainda'
+        ? 'nenhuma loja ainda'
         : comTelefone + ' com telefone · ' + (registros.length - comTelefone) + ' sem';
+    elSituacao.textContent = (capturando ? 'capturando' : 'pausado') + ' · ' + acumulado;
+
+    document.body.classList.toggle('ligado', capturando);
+    btnCaptura.textContent = capturando ? 'Pausar captura' : 'Começar a captar';
 
     elBuscas.textContent = '';
     for (const [busca, quantidade] of agruparPorBusca(registros)) {
@@ -58,10 +65,23 @@
   }
 
   async function carregar() {
-    const resposta = await perguntar({ tipo: 'TUDO' });
-    registros = resposta ? resposta.registros : [];
+    const [tudo, estado] = await Promise.all([
+      perguntar({ tipo: 'TUDO' }),
+      perguntar({ tipo: 'ESTADO' }),
+    ]);
+    registros = tudo ? tudo.registros : [];
+    capturando = estado ? estado.capturando === true : false;
     render();
   }
+
+  btnCaptura.addEventListener('click', async function () {
+    btnCaptura.disabled = true;
+    const estado = await perguntar({ tipo: 'CAPTURA', ligado: !capturando });
+    btnCaptura.disabled = false;
+    if (!estado) return;
+    capturando = estado.capturando === true;
+    render();
+  });
 
   btnExportar.addEventListener('click', function () {
     if (!registros.length) {

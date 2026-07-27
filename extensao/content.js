@@ -17,7 +17,7 @@
   const LIMITE_CARDS_SEM_NOME = 0.3;
 
   const jaEnviados = new Set();
-  let estado = { total: 0, comTelefone: 0 };
+  let estado = { total: 0, comTelefone: 0, capturando: false };
   let alerta = '';
 
   // --------------------------------------------------------- extracao ----
@@ -83,6 +83,13 @@
   }
 
   function varrer() {
+    // Desligada, a extensao nao le nada da pagina - so mostra o acumulado.
+    if (!estado.capturando) {
+      alerta = '';
+      render();
+      return;
+    }
+
     const cards = coletarCards();
 
     if (cards === null) {
@@ -173,6 +180,24 @@
   let elContador = null;
   let elDetalhe = null;
   let elAlerta = null;
+  let elPonto = null;
+  let btnCaptura = null;
+
+  function alternarCaptura() {
+    const ligar = !estado.capturando;
+    btnCaptura.disabled = true;
+    chrome.runtime.sendMessage({ tipo: 'CAPTURA', ligado: ligar }, function (resposta) {
+      btnCaptura.disabled = false;
+      if (chrome.runtime.lastError || !resposta) return;
+      estado = resposta;
+      // Ao religar, esquecemos o que ja foi enviado nesta aba, para que os
+      // cards que estao na tela agora sejam lidos na hora em vez de so na
+      // proxima rolagem.
+      if (estado.capturando) jaEnviados.clear();
+      render();
+      if (estado.capturando) varrer();
+    });
+  }
 
   function montarOverlay() {
     raiz = document.createElement('div');
@@ -181,14 +206,21 @@
     const contador = document.createElement('div');
     contador.id = 'maps-coletor-contador';
 
+    elPonto = document.createElement('i');
+    elPonto.id = 'maps-coletor-ponto';
     elContador = document.createElement('strong');
     elDetalhe = document.createElement('span');
+    contador.appendChild(elPonto);
     contador.appendChild(elContador);
     contador.appendChild(elDetalhe);
 
     elAlerta = document.createElement('div');
     elAlerta.id = 'maps-coletor-alerta';
     elAlerta.hidden = true;
+
+    btnCaptura = document.createElement('button');
+    btnCaptura.id = 'maps-coletor-captura';
+    btnCaptura.addEventListener('click', alternarCaptura);
 
     const botoes = document.createElement('div');
     botoes.id = 'maps-coletor-botoes';
@@ -218,7 +250,7 @@
       chrome.runtime.sendMessage({ tipo: 'LIMPAR' }, function (resposta) {
         if (chrome.runtime.lastError) return;
         jaEnviados.clear();
-        estado = resposta || { total: 0, comTelefone: 0 };
+        estado = resposta || { total: 0, comTelefone: 0, capturando: estado.capturando };
         confirmando = false;
         limparBtn.textContent = 'Limpar';
         limparBtn.classList.remove('maps-coletor-perigo');
@@ -231,24 +263,47 @@
 
     raiz.appendChild(contador);
     raiz.appendChild(elAlerta);
+    raiz.appendChild(btnCaptura);
     raiz.appendChild(botoes);
     document.body.appendChild(raiz);
   }
 
   function render() {
     if (!raiz) return;
+
     elContador.textContent = estado.total + (estado.total === 1 ? ' loja' : ' lojas');
     elDetalhe.textContent = ' · ' + estado.comTelefone + ' com telefone';
+
+    raiz.classList.toggle('maps-coletor-ligado', !!estado.capturando);
+    btnCaptura.textContent = estado.capturando ? 'Pausar captura' : 'Começar a captar';
+    elPonto.title = estado.capturando ? 'capturando' : 'pausado';
+
     elAlerta.hidden = !alerta;
     elAlerta.textContent = alerta;
   }
 
   // -------------------------------------------------------------- inicio ----
 
+  /*
+   * O estado liga/desliga vive no storage, entao outra aba (ou o popup) pode
+   * altera-lo. Ouvimos a mudanca para o painel nao ficar mentindo.
+   */
+  function ouvirMudancaExterna() {
+    chrome.storage.onChanged.addListener(function (mudancas, area) {
+      if (area !== 'local' || !mudancas.capturando) return;
+      const ligado = mudancas.capturando.newValue === true;
+      if (ligado === estado.capturando) return;
+      estado.capturando = ligado;
+      if (ligado) jaEnviados.clear();
+      render();
+    });
+  }
+
   function iniciar() {
     montarOverlay();
+    render();
+    ouvirMudancaExterna();
     pedirEstado();
-    varrer();
     setInterval(varrer, INTERVALO_VARREDURA_MS);
   }
 

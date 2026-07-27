@@ -52,10 +52,44 @@
         color: #9fb3c8;
         white-space: nowrap;
       }
+      #captura {
+        width: 100%;
+        margin-top: 14px;
+        padding: 9px 12px;
+        border: 0;
+        border-radius: 8px;
+        background: #1a7f37;
+        color: #fff;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      #captura:hover {
+        background: #22a04a;
+      }
+      body.ligado #captura {
+        background: #a16207;
+      }
+      body.ligado #captura:hover {
+        background: #ca8a04;
+      }
+      #ponto {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin-right: 7px;
+        border-radius: 50%;
+        background: #7b8794;
+        vertical-align: middle;
+      }
+      body.ligado #ponto {
+        background: #22c55e;
+      }
       #botoes {
         display: flex;
         gap: 6px;
-        margin-top: 14px;
+        margin-top: 6px;
       }
       button {
         flex: 1;
@@ -93,15 +127,17 @@
   <body>
     <h1>Maps Coletor</h1>
     <div id="total">—</div>
-    <div id="detalhe"></div>
+    <div id="detalhe"><i id="ponto"></i><span id="situacao"></span></div>
     <ul id="buscas"></ul>
+    <button id="captura">Começar a captar</button>
     <div id="botoes">
       <button id="exportar">Exportar Excel</button>
       <button id="limpar">Limpar</button>
     </div>
     <p id="dica">
-      Abra o Google Maps, pesquise e role a lista. As lojas entram sozinhas,
-      sem duplicar, mesmo trocando de busca ou fechando o Chrome.
+      Com a captura ligada, abra o Google Maps, pesquise e role a lista. As
+      lojas entram sozinhas, sem duplicar, mesmo trocando de busca ou fechando
+      o Chrome.
     </p>
     <script src="lib/xlsx.mini.js"></script>
     <script src="lib/schema.js"></script>

@@ -16,11 +16,17 @@ Chrome, na sua sessão. Quem rola a lista é você.
 ## Usar
 
 1. Abra o Google Maps e pesquise (`petshop`, `veterinário`, o que for)
-2. Role a lista da esquerda. O painel no canto inferior direito vai contando:
-   `40 lojas · 39 com telefone`
-3. Pode trocar de busca, mudar de cidade, fechar o Chrome e voltar depois —
-   o acumulado persiste e não duplica
-4. Clique em **Exportar Excel** (no painel ou no ícone da extensão)
+2. No painel do canto inferior direito, clique em **Começar a captar**.
+   Enquanto não clicar, a extensão não lê nada da página
+3. Role a lista da esquerda. O painel vai contando:
+   `● 40 lojas · 39 com telefone`, com o ponto verde piscando
+4. Pode trocar de busca, mudar de cidade, fechar o Chrome e voltar depois —
+   a captura continua ligada e o acumulado não duplica
+5. Clique em **Exportar Excel** (no painel ou no ícone da extensão)
+
+O botão vira **Pausar captura** enquanto está ligado. Pausar não apaga nada:
+só para de ler a página. O estado liga/desliga fica salvo no navegador e vale
+para todas as abas, então recarregar o Maps não desliga a captura.
 
 ## Colunas do Excel
 
@@ -47,9 +53,14 @@ inventado.
 
 ## Como funciona
 
+A captura nasce **desligada**. O estado mora em `chrome.storage.local`, não na
+aba, por dois motivos: o Maps recarrega a página ao trocar de busca (e a
+captura morreria no meio), e o botão precisa dizer a mesma coisa em todas as
+abas e no popup.
+
 ```
 content.js   lê o feed de resultados a cada 700ms  ──┐
-                                                     │ registros novos
+             (só quando a captura está ligada)       │ registros novos
 lib/parse.js funções puras de parsing (testadas)     │
                                                      ▼
                                             background.js

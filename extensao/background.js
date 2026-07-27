@@ -7,6 +7,7 @@
  */
 
 const CHAVE = 'lojas';
+const CHAVE_CAPTURA = 'capturando';
 
 // O service worker pode receber varias mensagens ao mesmo tempo. Sem serializar
 // as escritas, dois ADICIONAR concorrentes leriam o mesmo estado e o segundo
@@ -25,17 +26,33 @@ async function carregar() {
   return dados[CHAVE] || {};
 }
 
-function resumir(mapa) {
+// A captura comeca desligada: nada e coletado ate o usuario pedir. O estado
+// mora no storage, e nao na aba, para sobreviver aos recarregamentos que o
+// proprio Maps provoca ao trocar de busca, e para valer em todas as abas.
+async function capturando() {
+  const dados = await chrome.storage.local.get(CHAVE_CAPTURA);
+  return dados[CHAVE_CAPTURA] === true;
+}
+
+async function resumir(mapa) {
   const registros = Object.values(mapa);
   let comTelefone = 0;
   for (const registro of registros) {
     if (registro.telefone) comTelefone++;
   }
-  return { total: registros.length, comTelefone: comTelefone };
+  return {
+    total: registros.length,
+    comTelefone: comTelefone,
+    capturando: await capturando(),
+  };
 }
 
 async function adicionar(novos) {
   const mapa = await carregar();
+  // Segunda barreira: mesmo que um content script desatualizado mande dados,
+  // nada entra com a captura desligada.
+  if (!(await capturando())) return resumir(mapa);
+
   let adicionados = 0;
   for (const registro of novos) {
     if (!registro || !registro.id) continue;
@@ -63,7 +80,11 @@ chrome.runtime.onMessage.addListener(function (mensagem, remetente, responder) {
         responder(await adicionar(mensagem.registros || []));
         break;
       case 'ESTADO':
-        responder(resumir(await carregar()));
+        responder(await resumir(await carregar()));
+        break;
+      case 'CAPTURA':
+        await chrome.storage.local.set({ [CHAVE_CAPTURA]: mensagem.ligado === true });
+        responder(await resumir(await carregar()));
         break;
       case 'TUDO': {
         const mapa = await carregar();
@@ -72,7 +93,7 @@ chrome.runtime.onMessage.addListener(function (mensagem, remetente, responder) {
       }
       case 'LIMPAR':
         await chrome.storage.local.set({ [CHAVE]: {} });
-        responder({ total: 0, comTelefone: 0 });
+        responder(await resumir({}));
         break;
       default:
         responder(null);
