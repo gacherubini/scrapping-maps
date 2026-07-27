@@ -62,6 +62,23 @@ test('xlsx: telefone vem antes dos sem telefone na ordenacao', () => {
   );
 });
 
+test('nome do arquivo: usa hora local, nao UTC', () => {
+  // 27/07/2026 as 18:44 no horario de Brasilia. Em UTC seriam 21:44, e era
+  // isso que o nome do arquivo mostrava antes.
+  const local = new Date(2026, 6, 27, 18, 44, 0);
+  assert.equal(buildFilename(AMOSTRA, local), 'lojas_maps_2026-07-27_18h44_2itens.xlsx');
+});
+
+test('nome do arquivo: zero a esquerda em mes, dia e hora', () => {
+  const local = new Date(2026, 0, 5, 9, 7, 0);
+  assert.equal(buildFilename([], local), 'lojas_maps_2026-01-05_09h07_0itens.xlsx');
+});
+
+test('nome do arquivo: nao contem caractere proibido no Windows', () => {
+  const nome = buildFilename(AMOSTRA);
+  assert.ok(!/[<>:"/\\|?*]/.test(nome), 'nome invalido no Windows: ' + nome);
+});
+
 test('xlsx: escreve amostra em disco para inspecao externa', () => {
   fs.mkdirSync(path.dirname(SAIDA), { recursive: true });
   const bytes = MiniXLSX.build({ sheetName: 'Lojas', columns: COLUMNS, rows: AMOSTRA });

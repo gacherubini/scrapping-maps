@@ -20,8 +20,23 @@
     { key: 'capturado_em', label: 'Capturado em', width: 20, type: 'text' },
   ];
 
-  global.buildFilename = function (records) {
-    const stamp = new Date().toISOString().slice(0, 16).replace('T', '_').replace(':', 'h');
+  // Hora local, nao UTC: toISOString() deixaria o nome do arquivo 3 horas
+  // adiantado no Brasil e fora de sincronia com a coluna "Capturado em".
+  global.buildFilename = function (records, agora) {
+    const data = agora || new Date();
+    const dd = function (n) {
+      return String(n).padStart(2, '0');
+    };
+    const stamp =
+      data.getFullYear() +
+      '-' +
+      dd(data.getMonth() + 1) +
+      '-' +
+      dd(data.getDate()) +
+      '_' +
+      dd(data.getHours()) +
+      'h' +
+      dd(data.getMinutes());
     return 'lojas_maps_' + stamp + '_' + records.length + 'itens.xlsx';
   };
 
